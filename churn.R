@@ -38,6 +38,9 @@ df <- df %>% mutate(STATUT_TRAFIC_M1 = imputation(STATUT_TRAFIC_M1, VOL_DATA_M1)
                     STATUT_FACT_M1 = imputation(STATUT_FACT_M1, MONTANT_FACT_HT_M1),
                     STATUT_FACT_M2 = imputation(STATUT_FACT_M2, MONTANT_FACT_HT_M2))
 
+# drop na categorial offre
+df <- df %>% drop_na()
+
 # transform categorical variables into factor
 df <- df %>% modify_at(vars(CHURN:STATUT_FACT_M2), as.factor)
 
@@ -45,4 +48,32 @@ df <- df %>% modify_at(vars(CHURN:STATUT_FACT_M2), as.factor)
 barplot(table(df$CHURN), xlab = "CHURN", ylab = "Effectif", 
         legend.text = c("No Churn", "Churn"), col = c("blue", "red"), 
         args.legend = list(x = "topright"))
+
 # we can see the imbalance between classes
+
+# Descriptive statistic
+## we can applied transformation log(1+ VOL_DATA_M1) in VOL_DATA_M1
+df_log <- df %>% 
+  mutate(VOL_DATA_M1 = log(1+VOL_DATA_M1)) %>% 
+  select(c("VOL_DATA_M1", "CHURN"))
+
+## Plot VOL_DATA_M1 and log(1+VOL_DATA_M1)
+
+plot1 <- ggplot(df) +
+  aes(x = VOL_DATA_M1, fill = CHURN) +
+  geom_histogram() +
+  ggtitle("Fig1 : VOL_DATA_M1") +
+  xlab("VOL_DATA_M1") +
+  ylab("Count")
+
+
+plot2 <- ggplot(data = df_log) +
+  aes(x = VOL_DATA_M1, fill = CHURN) +
+  geom_histogram() +
+  ggtitle("Fig1 : VOL_DATA_M1") +
+  xlab("log(1 + VOL_DATA_M1)") +
+  ylab("Count")
+
+gridExtra::grid.arrange(plot1, plot2, ncol=2)
+
+
